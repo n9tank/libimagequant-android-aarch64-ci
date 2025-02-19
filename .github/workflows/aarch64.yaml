@@ -1,0 +1,38 @@
+name: Rust CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - uses: actions/checkout@v4
+    
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        profile: minimal
+        override: true
+        
+    - name: Add rust-src component
+      run: rustup component add rust-src --toolchain nightly
+
+    - name: Set up Android targets
+      run: rustup target add aarch64-linux-android
+      
+    - name: Build
+      working-directory: ./imagequant-sys
+      run: cargo +nightly build --target aarch64-linux-android --release -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort
+    
+    - name: Upload .a file as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: imagequant-sys.a
+        path: ./target/aarch64-linux-android/release/libimagequant_sys.a
