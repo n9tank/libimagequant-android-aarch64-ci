@@ -1,0 +1,90 @@
+name: Rust CI/CD Ultra Fast
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+        targets: aarch64-linux-android
+        components: rust-src
+    
+    - name: Cache optimization
+      uses: actions/cache@v4
+      id: cargo-cache
+      with:
+        path: |
+          ~/.cargo/registry/
+          ~/.cargo/git/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Setup Android target
+      run: rustup target add aarch64-linux-android
+    
+    - name: Prefetch dependencies
+      working-directory: ./imagequant-sys
+      run: |
+        cargo fetch --target aarch64-linux-android
+    
+    - name: Build for Android
+      working-directory: ./imagequant-sys
+      env:
+        RUSTFLAGS: "-C target-feature=+crt-static"
+        CARGO_TARGET_DIR: "../target"  # 添加这行，指定目标目录到项目根目录
+      run: |
+        rustup component list --installed | grep rust-src || rustup component add rust-src
+        
+        echo "开始构建..."
+        time cargo build \
+          -Z build-std=std,panic_abort \
+          --target aarch64-linux-android \
+          --release \
+          --verbose
+        
+        echo "构建完成，检查产物..."
+        # 修改检查路径到项目根目录的target
+        if [ -f "../target/aarch64-linux-android/release/libimagequant_sys.a" ]; then
+          echo "✅ 构建成功！产物存在"
+          ls -la ../target/aarch64-linux-android/release/libimagequant_sys.a
+          file ../target/aarch64-linux-android/release/libimagequant_sys.a
+        else
+          echo "❌ 构建产物未找到！"
+          # 搜索整个项目查找产物
+          find .. -name "libimagequant_sys.a" -type f | head -10
+          exit 1
+        fi
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: imagequant-android-${{ github.sha }}
+        # 修改路径到项目根目录的target
+        path: target/aarch64-linux-android/release/libimagequant_sys.a
+        retention-days: 7
+
+    - name: Build metrics
+      if: always()
+      run: |
+        echo "构建状态: ${{ job.status }}"
+        echo "缓存命中: ${{ steps.cargo-cache.outputs.cache-hit }}"
