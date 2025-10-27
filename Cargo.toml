@@ -33,7 +33,7 @@ _internal_c_ffi = []
 [profile.release]
 opt-level = 3
 lto = true 
-codegen-units = 1
+codegen-units = 16
 panic = "abort"
 strip = true
 

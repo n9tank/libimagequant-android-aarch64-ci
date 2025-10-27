@@ -9,6 +9,7 @@ on:
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: true
   RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 1
 
 jobs:
   build:
@@ -34,7 +35,7 @@ jobs:
         path: |
           ~/.cargo/registry/
           ~/.cargo/git/
-          target/
+          target/  # 项目根目录的 target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
           ${{ runner.os }}-cargo-
@@ -51,27 +52,35 @@ jobs:
       working-directory: ./imagequant-sys
       env:
         RUSTFLAGS: "-C target-feature=+crt-static"
-        CARGO_TARGET_DIR: "../target"  # 添加这行，指定目标目录到项目根目录
+        # 使用绝对路径指向项目根目录的 target
+        CARGO_TARGET_DIR: "${{ github.workspace }}/target"
       run: |
         rustup component list --installed | grep rust-src || rustup component add rust-src
         
-        echo "开始构建..."
+        echo "🚀 在 imagequant-sys 目录内开始构建..."
+        echo "当前目录: $(pwd)"
+        echo "CARGO_TARGET_DIR: $CARGO_TARGET_DIR"
+        
+        # 在 imagequant-sys 目录内构建
         time cargo build \
           -Z build-std=std,panic_abort \
           --target aarch64-linux-android \
           --release \
-          --verbose
+          --verbose \
+          -j $(nproc)
         
-        echo "构建完成，检查产物..."
-        # 修改检查路径到项目根目录的target
-        if [ -f "../target/aarch64-linux-android/release/libimagequant_sys.a" ]; then
-          echo "✅ 构建成功！产物存在"
-          ls -la ../target/aarch64-linux-android/release/libimagequant_sys.a
-          file ../target/aarch64-linux-android/release/libimagequant_sys.a
+        echo "✅ 构建完成，检查产物..."
+        # 产物应该在项目根目录的 target 中
+        if [ -f "${{ github.workspace }}/target/aarch64-linux-android/release/libimagequant_sys.a" ]; then
+          echo "🎉 构建成功！产物在项目根目录的 target 中"
+          ls -lh "${{ github.workspace }}/target/aarch64-linux-android/release/libimagequant_sys.a"
+          file "${{ github.workspace }}/target/aarch64-linux-android/release/libimagequant_sys.a"
         else
           echo "❌ 构建产物未找到！"
-          # 搜索整个项目查找产物
-          find .. -name "libimagequant_sys.a" -type f | head -10
+          echo "搜索整个项目中的 .a 文件:"
+          find "${{ github.workspace }}" -name "*.a" -type f 2>/dev/null | head -20
+          echo "Target 目录内容:"
+          find "${{ github.workspace }}/target" -type f -name "*.a" 2>/dev/null | head -20 || echo "Target 目录未找到或为空"
           exit 1
         fi
     
@@ -79,12 +88,28 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: imagequant-android-${{ github.sha }}
-        # 修改路径到项目根目录的target
+        # 从项目根目录的 target 上传
         path: target/aarch64-linux-android/release/libimagequant_sys.a
         retention-days: 7
+        compression-level: 6
 
     - name: Build metrics
       if: always()
       run: |
+        echo "📈 构建统计:"
         echo "构建状态: ${{ job.status }}"
         echo "缓存命中: ${{ steps.cargo-cache.outputs.cache-hit }}"
+        echo "运行器: ${{ runner.os }}-${{ runner.arch }}"
+        echo "CPU: $(nproc) 核心"
+        
+        # 检查构建产物
+        echo "🔍 构建产物检查:"
+        if [ -f "target/aarch64-linux-android/release/libimagequant_sys.a" ]; then
+          echo "✅ 产物位置: target/aarch64-linux-android/release/libimagequant_sys.a"
+          ls -lh "target/aarch64-linux-android/release/libimagequant_sys.a"
+        elif [ -f "imagequant-sys/target/aarch64-linux-android/release/libimagequant_sys.a" ]; then
+          echo "✅ 产物位置: imagequant-sys/target/aarch64-linux-android/release/libimagequant_sys.a"
+          ls -lh "imagequant-sys/target/aarch64-linux-android/release/libimagequant_sys.a"
+        else
+          echo "❌ 产物不存在于预期位置"
+        fi

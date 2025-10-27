@@ -1,0 +1,60 @@
+[33mb80f6f2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m 太大
+[33mb239eee[m 同步
+[33m26edfc4[m Fix for build-std
+[33m4aa3c98[m Ensure profiles work without a workspace
+[33m399f14c[m CI fix
+[33md239c50[m Updated docs
+[33mf22c489[m no_std support
+[33m4c216e1[m Bump
+[33m7255f54[m Fix makefile
+[33m8ea42d7[m Tolerate negative values
+[33m9c88493[m Assertions
+[33mdf8c8ea[m Update WASM RAYON special handling link
+[33m8461d0b[m Amortize init
+[33m7731670[m Limit deps' features
+[33mb78816a[m Avoid using once_cell
+[33m755f9c0[m Try using no-std types
+[33m29a1825[m Alpha check precision
+[33m982b074[m Private constants
+[33m24e2956[m Bump
+[33mca16a5c[m Use selective strategy only at the end
+[33m4b3dd4d[m Tweak for squaring error too much
+[33mef433f3[m Select by sum instead of max
+[33m302601a[m Readability
+[33me3007a7[m Avoid confusing divisor
+[33m6aad8f2[m Bump sys crate
+[33m8283d63[m[33m ([m[1;33mtag: [m[1;33m4.4.0[m[33m)[m Bump
+[33m029f0af[m Add `liq_result_from_palette` to the C interface
+[33mc156bf9[m Help LLVM remove panicking bounds checks
+[33mb749148[m Make it easier to reconstruct QuantizationResult
+[33m1f1e11a[m Quicker sort
+[33m1f73ba3[m fmt/clippy
+[33m16b6cb7[m Fix float to integer overflow
+[33mb7340db[m[33m ([m[1;33mtag: [m[1;33m4.3.4[m[33m)[m Bump
+[33m3db2bb3[m Reduce panic branches in vp_create_node
+[33md80380d[m Try caching vp distance
+[33m53e1d34[m Clippy
+[33m2e810a3[m Clippy/fmt
+[33m8018d00[m Merge pull request #118 from mathieu-aubin/patch-1
+[33m9641e1b[m fix warning: elided lifetime
+[33m869aa5b[m[33m ([m[1;33mtag: [m[1;33m4.3.3[m[33m)[m Lower MSRV
+[33md6514e8[m[33m ([m[1;33mtag: [m[1;33m4.3.2[m[33m)[m Clippy
+[33m0a808e0[m fmt
+[33m3b58449[m Update for latest RGB
+[33mff076c7[m Self arg tweak
+[33mfea449e[m[33m ([m[1;33mtag: [m[1;33m4.3.1[m[33m)[m Bump
+[33m1d9b00b[m Clippy
+[33m39cb27e[m Make sure threads are separated by a cache line
+[33mf11e783[m Image clone
+[33m553fe92[m Image size checks
+[33m787ba49[m[33m ([m[1;33mtag: [m[1;33m4.3.0[m[33m)[m Bump
+[33mc4fbe8f[m Pal len getter
+[33m3125533[m Avoid panic
+[33m00a0348[m Defer freeing histogram data to remapping
+[33mb6c8a2b[m Use in-place scope
+[33m0b8daa9[m Merge pull request #116 from radarhere/patch-1
+[33me8bcee4[m Fixed typo
+[33mcb33d0b[m Merge pull request #114 from radarhere/patch-1
+[33m686b63e[m Merge pull request #115 from radarhere/version
+[33m75dc15a[m Updated libimagequant version
+[33m8405fb8[m Updated imagequant-sys version
